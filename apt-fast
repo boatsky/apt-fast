@@ -10,6 +10,7 @@
 # Public License as published by the Free Software Foundation; either
 # version 3 of the License, or (at your option) any later version.
 #
+# Copyright (C) 2026 boatsky
 
 shopt -s nullglob
 
@@ -87,36 +88,13 @@ TMP_http_proxy="${http_proxy-${TMP_RANDOM}}"
 TMP_https_proxy="${https_proxy-${TMP_RANDOM}}"
 
 # Check for proper privileges.
-# Call explicitly with environment variables to get them into root conext.
-if [ "$root" -ne 0 ] && [ "$UID" != 0 ]; then
-  exec sudo DEBUG="$DEBUG" \
-            LCK_FILE="$TMP_LCK_FILE" \
-            DOWNLOADBEFORE="$TMP_DOWNLOADBEFORE" \
-            _APTMGR="$TMP__APTMGR" \
-            APTCACHE="$TMP_APTCACHE" \
-            DLDIR="$TMP_DLDIR" \
-            DLLIST="$TMP_DLLIST" \
-            _MAXNUM="$TMP__MAXNUM" \
-            _MAXCONPERSRV="$TMP__MAXCONPERSRV" \
-            _SPLITCON="$TMP__SPLITCON" \
-            _MINSPLITSZ="$TMP__MINSPLITSZ" \
-            _PIECEALGO="$TMP__PIECEALGO" \
-            aptfast_prefix="$TMP_aptfast_prefix" \
-            APT_FAST_TIMEOUT="$TMP_APT_FAST_TIMEOUT" \
-            APT_FAST_APT_AUTH="$TMP_APT_FAST_APT_AUTH" \
-            VERBOSE_OUTPUT="$TMP_VERBOSE_OUTPUT" \
-            ftp_proxy="$TMP_ftp_proxy" \
-            http_proxy="$TMP_http_proxy" \
-            https_proxy="$TMP_https_proxy" \
-            "$0" "$@"
-fi
 
 # Define lockfile.
 # Use /tmp as directory because everybody (not only root) has to have write
 # permissions.
 # We need lock for non-root commands too, because we only have one download
 # list file.
-LCK_FILE="/tmp/apt-fast"
+LCK_FILE="$PREFIX/tmp/apt-fast"
 LCK_FD=99
 
 # Set default package manager, APT cache, temporary download dir,
@@ -177,7 +155,7 @@ VERBOSE_OUTPUT=
 _DOWNLOADER='aria2c --no-conf -c -j ${_MAXNUM} -x ${_MAXCONPERSRV} -s ${_SPLITCON} -i ${DLLIST} --min-split-size=${_MINSPLITSZ} --stream-piece-selector=${_PIECEALGO} --connect-timeout=600 --timeout=600 -m0 --header "Accept: */*"'
 
 # Load config file.
-for Prefix in /usr/local/etc /etc; do
+for Prefix in $PREFIX/usr/local/etc $PREFIX/etc; do
     CONFFILE=${Prefix}/apt-fast.conf
     if [ -e "$CONFFILE" ]; then
         source "$CONFFILE"
